@@ -19,6 +19,25 @@ function FullLogo({ className = "w-[240px] md:w-[280px]" }) {
   );
 }
 
+function DownloadCIFButton({ variant = "primary" }) {
+  const baseClass =
+    "inline-flex items-center justify-center rounded-2xl px-6 py-3 font-medium transition hover:scale-[1.02]";
+  const styleClass =
+    variant === "primary"
+      ? "bg-cyan-300 text-slate-950 shadow-[0_0_36px_rgba(125,211,252,0.18)]"
+      : "border border-cyan-300/30 bg-cyan-300/10 text-cyan-200 hover:bg-cyan-300 hover:text-slate-950";
+
+  return (
+    <a
+      href="/DavAri_Intake_Form_Rev2.pdf"
+      download
+      className={`${baseClass} ${styleClass}`}
+    >
+      Download Customer Intake Form (CIF)
+    </a>
+  );
+}
+
 export default function App() {
   const [transition, setTransition] = useState({
     open: true,
@@ -51,7 +70,7 @@ export default function App() {
     {
       title: "Technical Reporting",
       description:
-        "Clear 8D and A3-style reporting that documents findings, captures the problem clearly, and helps manufacturers or stakeholders move toward root cause and corrective action.",
+        "Clear Failure Analysis Report (FAR) and A3-style reporting summary that documents findings, captures the problem clearly, and helps stakeholders move toward root cause and corrective action.",
     },
     {
       title: "Manufacturer Collaboration",
@@ -78,7 +97,7 @@ export default function App() {
     "Virtual technical consultation",
     "Fixture failure findings",
     "Functional test observations",
-    "8D / A3-style reporting",
+    "FAR / A3-style reporting",
     "Recommended next-step actions",
     "Independent technical insight",
   ];
@@ -211,7 +230,7 @@ export default function App() {
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                   <div className="text-sm text-slate-400">Reporting</div>
                   <div className="mt-1 text-base font-semibold">
-                    8D & A3-style documentation
+                    Failure Analysis Report (FAR) & A3 Summary Style documentation
                   </div>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -287,8 +306,7 @@ export default function App() {
               <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
                 The foundation of this work is built on hands-on experience
                 within leading lighting and electrical manufacturing
-                environments, including organizations such as Eaton Lighting and
-                Acuity Brands.
+                environments.
               </p>
             </div>
 
@@ -315,9 +333,8 @@ export default function App() {
                 <p className="mt-4 leading-7 text-slate-300">
                   DavAri Solutions is grounded in hands-on quality, failure
                   analysis, and lighting-system experience developed across
-                  major manufacturing environments, including Eaton Lighting and
-                  Acuity Brands, with over ten years of overall industry
-                  experience.
+                  major manufacturing environments with over ten years of overall
+                  industry experience.
                 </p>
               </div>
             </div>
@@ -349,6 +366,16 @@ export default function App() {
                   </p>
                 </motion.div>
               ))}
+            </div>
+
+            <div className="mt-10 rounded-[2rem] border border-cyan-300/15 bg-gradient-to-r from-cyan-400/8 via-white/0 to-blue-400/8 p-6">
+              <div className="text-lg font-semibold">Start with the intake form</div>
+              <p className="mt-3 max-w-3xl leading-7 text-slate-300">
+                Download the Customer Intake Form (CIF), complete the known fixture and issue details, and email the completed form to info@davarisolutions.com.
+              </p>
+              <div className="mt-5">
+                <DownloadCIFButton variant="secondary" />
+              </div>
             </div>
           </div>
         </section>
@@ -383,7 +410,7 @@ export default function App() {
             <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
               <div className="text-2xl font-semibold">Report & Recommend</div>
               <p className="mt-4 leading-7 text-slate-300">
-                Deliver clear findings through consultation notes or 8D/A3-style
+                Deliver clear findings through consultation notes or FAR/A3-style
                 reporting and outline practical next-step actions.
               </p>
             </div>
@@ -416,7 +443,7 @@ export default function App() {
                   <div className="mb-3 text-sm uppercase tracking-[0.35em] text-cyan-300">
                     CONTACT{" "}
                     <span className="normal-case tracking-normal text-sm text-slate-400">
-                      - info@davarisolutions.com
+                      - info@davarisolutions.com / (770)-913-6865
                     </span>
                   </div>
                   <h2 className="text-3xl font-semibold md:text-4xl">
@@ -434,14 +461,15 @@ export default function App() {
                       href="mailto:info@davarisolutions.com"
                       className="rounded-2xl bg-cyan-300 px-6 py-3 font-medium text-slate-950 transition hover:scale-[1.02]"
                     >
-                      Email DavAri Solutions
+                      Email Us
                     </a>
-                    <button
-                      onClick={() => startTransition("services", "Services")}
+                    <a
+                      href="tel:+17709136865"
                       className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300"
                     >
-                      Review Services
-                    </button>
+                      Call Us
+                    </a>
+                    <DownloadCIFButton variant="secondary" />
                   </div>
                 </div>
               </div>
