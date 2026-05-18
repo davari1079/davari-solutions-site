@@ -38,11 +38,415 @@ function DownloadCIFButton({ variant = "primary" }) {
   );
 }
 
+function CompleteCIFButton({ onClick, variant = "primary" }) {
+  const baseClass =
+    "inline-flex items-center justify-center rounded-2xl px-6 py-3 font-medium transition hover:scale-[1.02]";
+  const styleClass =
+    variant === "primary"
+      ? "bg-cyan-300 text-slate-950 shadow-[0_0_36px_rgba(125,211,252,0.18)]"
+      : "border border-cyan-300/30 bg-cyan-300/10 text-cyan-200 hover:bg-cyan-300 hover:text-slate-950";
+
+  return (
+    <button type="button" onClick={onClick} className={`${baseClass} ${styleClass}`}>
+      Complete Customer Intake Form (CIF)
+    </button>
+  );
+}
+
+const initialCifData = {
+  companyName: "",
+  contactName: "",
+  preferredContact: "Email",
+  email: "",
+  phone: "",
+  fixtureManufacturer: "",
+  fixtureType: "",
+  fixtureModel: "",
+  fixtureInputVoltage: "",
+  ipRating: "",
+  controlType: "",
+  controlModel: "",
+  mountingType: "",
+  driverManufacturer: "",
+  driverOutputType: "",
+  driverModel: "",
+  driverOutput: "",
+  driverInputVoltage: "",
+  outputsPerDriver: "",
+  dimmingMethod: "",
+  ledForwardVoltage: "",
+  currentLimiting: "",
+  applicationConditions: [],
+  dailyHours: "",
+  geographicLocation: "",
+  issueTypes: [],
+  issueOther: "",
+  dateFirstObserved: "",
+  failureRate: "",
+  repeatable: "",
+  detailedDescription: "",
+  electricalInputVoltage: "",
+  groundingCondition: "",
+  lineFrequency: "",
+  recentElectricalEvents: "",
+  surgeProtection: "",
+  labTesting: "",
+  labResults: "",
+  replacementInstalled: "",
+  replacementResults: "",
+  requestedServices: [],
+  expectedTurnaround: "",
+  priority: "",
+  additionalNotes: "",
+};
+
+function Field({ label, name, value, onChange, required = false, type = "text", placeholder = "" }) {
+  return (
+    <label className="block">
+      <span className="text-sm text-slate-300">
+        {label}{required && <span className="text-cyan-300"> *</span>}
+      </span>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={(e) => onChange(name, e.target.value)}
+        placeholder={placeholder}
+        className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300"
+      />
+    </label>
+  );
+}
+
+function SelectField({ label, name, value, onChange, options, required = false }) {
+  return (
+    <label className="block">
+      <span className="text-sm text-slate-300">
+        {label}{required && <span className="text-cyan-300"> *</span>}
+      </span>
+      <select
+        name={name}
+        value={value}
+        onChange={(e) => onChange(name, e.target.value)}
+        className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300"
+      >
+        <option value="">Select...</option>
+        {options.map((option) => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function TextAreaField({ label, name, value, onChange, required = false, rows = 4, placeholder = "" }) {
+  return (
+    <label className="block">
+      <span className="text-sm text-slate-300">
+        {label}{required && <span className="text-cyan-300"> *</span>}
+      </span>
+      <textarea
+        name={name}
+        value={value}
+        onChange={(e) => onChange(name, e.target.value)}
+        rows={rows}
+        placeholder={placeholder}
+        className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300"
+      />
+    </label>
+  );
+}
+
+function CheckboxGroup({ label, name, values, onChange, options, required = false }) {
+  const toggle = (option) => {
+    const next = values.includes(option)
+      ? values.filter((value) => value !== option)
+      : [...values, option];
+    onChange(name, next);
+  };
+
+  return (
+    <div>
+      <div className="text-sm text-slate-300">
+        {label}{required && <span className="text-cyan-300"> *</span>}
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {options.map((option) => (
+          <label key={option} className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 transition hover:border-cyan-300/40">
+            <input
+              type="checkbox"
+              checked={values.includes(option)}
+              onChange={() => toggle(option)}
+              className="h-4 w-4 accent-cyan-300"
+            />
+            {option}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function IntakeWorkflow({ onBack }) {
+  const [started, setStarted] = useState(false);
+  const [page, setPage] = useState(0);
+  const [data, setData] = useState(initialCifData);
+  const [errors, setErrors] = useState({});
+
+  const update = (name, value) => {
+    setData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: false }));
+  };
+
+  const pageRequired = [
+    ["companyName", "contactName", "email", "phone", "fixtureManufacturer", "fixtureType", "fixtureModel"],
+    ["applicationConditions", "issueTypes", "dateFirstObserved", "repeatable", "detailedDescription"],
+    ["requestedServices", "expectedTurnaround", "priority"],
+  ];
+
+  const labelMap = {
+    companyName: "Company Name",
+    contactName: "Contact Name",
+    email: "Email",
+    phone: "Phone",
+    fixtureManufacturer: "Fixture Manufacturer",
+    fixtureType: "Fixture Type",
+    fixtureModel: "Fixture Model",
+    applicationConditions: "Application Conditions",
+    issueTypes: "Issue Type",
+    dateFirstObserved: "Date First Observed",
+    repeatable: "Repeatable",
+    detailedDescription: "Detailed Description",
+    requestedServices: "Requested Services",
+    expectedTurnaround: "Expected Turnaround Time",
+    priority: "Priority",
+  };
+
+  const isEmpty = (value) => Array.isArray(value) ? value.length === 0 : !String(value || "").trim();
+
+  const validatePage = (targetPage = page) => {
+    const missing = {};
+    pageRequired[targetPage].forEach((field) => {
+      if (isEmpty(data[field])) missing[field] = true;
+    });
+    setErrors(missing);
+    const firstMissing = Object.keys(missing)[0];
+    if (firstMissing) {
+      setTimeout(() => document.getElementById(firstMissing)?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+      return false;
+    }
+    return true;
+  };
+
+  const nextPage = () => {
+    if (validatePage(page)) {
+      setPage((prev) => prev + 1);
+      setErrors({});
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+    }
+  };
+
+  const previousPage = () => {
+    setPage((prev) => Math.max(0, prev - 1));
+    setErrors({});
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+  };
+
+  const submitForm = () => {
+    if (!validatePage(2)) return;
+
+    const submittedDate = new Date().toLocaleDateString();
+    const body = `DavAri Solutions Customer Intake Form (CIF)\n\nSubmitted Date: ${submittedDate}\n\nCLIENT INFORMATION\nCompany Name: ${data.companyName}\nContact Name: ${data.contactName}\nPreferred Contact: ${data.preferredContact}\nEmail: ${data.email}\nPhone: ${data.phone}\n\nFIXTURE & CONTROL DETAILS\nManufacturer: ${data.fixtureManufacturer}\nFixture Type: ${data.fixtureType}\nModel: ${data.fixtureModel}\nInput Voltage: ${data.fixtureInputVoltage}\nIP Rating: ${data.ipRating}\nControl Type: ${data.controlType}\nControl Model: ${data.controlModel}\nMounting Type: ${data.mountingType}\n\nDRIVER INFORMATION\nManufacturer: ${data.driverManufacturer}\nOutput Type: ${data.driverOutputType}\nModel: ${data.driverModel}\nOutput Current/Voltage: ${data.driverOutput}\nInput Voltage: ${data.driverInputVoltage}\n# of Outputs per Driver: ${data.outputsPerDriver}\nDimming Method: ${data.dimmingMethod}\nLED Forward Voltage: ${data.ledForwardVoltage}\nCurrent Limiting on LED Load: ${data.currentLimiting}\n\nAPPLICATION / ENVIRONMENT\nApplication Conditions: ${data.applicationConditions.join(", ")}\nDaily Hours of Operation: ${data.dailyHours}\nGeographic Location: ${data.geographicLocation}\n\nISSUE DESCRIPTION\nIssue Types: ${data.issueTypes.join(", ")}${data.issueOther ? `, Other: ${data.issueOther}` : ""}\nDate First Observed: ${data.dateFirstObserved}\nFailure Rate: ${data.failureRate}\nRepeatable: ${data.repeatable}\nDetailed Description: ${data.detailedDescription}\n\nELECTRICAL & INSTALLATION\nInput Voltage: ${data.electricalInputVoltage}\nGrounding Condition: ${data.groundingCondition}\nLine Frequency: ${data.lineFrequency}\nRecent Electrical Events: ${data.recentElectricalEvents}\nSurge Protection: ${data.surgeProtection}\n\nTESTING & TROUBLESHOOTING\nLab Testing: ${data.labTesting}\nLab Results: ${data.labResults}\nReplacement Installed: ${data.replacementInstalled}\nReplacement Results: ${data.replacementResults}\n\nREQUESTED SERVICES\n${data.requestedServices.join(", ")}\nExpected Turnaround: ${data.expectedTurnaround}\nPriority: ${data.priority}\nAdditional Notes: ${data.additionalNotes}\n\nNote: This website form does not store responses. Please attach photos, labels, test data, or supporting files directly to this email before sending.`;
+
+    const mailto = `mailto:info@davarisolutions.com?subject=${encodeURIComponent(`DavAri CIF Submission - ${data.companyName}`)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+  };
+
+  const ErrorText = ({ name }) => errors[name] ? <div className="mt-2 text-sm text-cyan-200">Required before continuing.</div> : null;
+  const fieldWrap = (name, child) => <div id={name} className={errors[name] ? "rounded-2xl border border-cyan-300/50 p-2" : ""}>{child}<ErrorText name={name} /></div>;
+
+  if (!started) {
+    return (
+      <main className="mx-auto max-w-5xl px-6 py-16 lg:px-8">
+        <div className="rounded-[2.5rem] border border-cyan-300/20 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 p-8 shadow-[0_18px_80px_rgba(2,8,23,0.5)] md:p-12">
+          <div className="mb-6 inline-flex rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm text-cyan-200">Customer Intake Workflow</div>
+          <h1 className="text-3xl font-semibold md:text-5xl">Complete Customer Intake Form (CIF)</h1>
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+            The CIF captures the key fixture, driver, application, issue, and requested service details DavAri Solutions needs to review a lighting performance or failure concern.
+          </p>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="text-lg font-semibold">3 short pages</div>
+              <p className="mt-2 text-sm leading-6 text-slate-300">Client and product details, application and issue details, then testing and service request details.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="text-lg font-semibold">10–15 minutes</div>
+              <p className="mt-2 text-sm leading-6 text-slate-300">Most clients can complete it in one sitting if fixture and issue information is available.</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="text-lg font-semibold">No saved progress</div>
+              <p className="mt-2 text-sm leading-6 text-slate-300">This form does not store information. If you leave or refresh, the form will not be saved.</p>
+            </div>
+          </div>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <button onClick={() => setStarted(true)} className="rounded-2xl bg-cyan-300 px-6 py-3 font-medium text-slate-950 transition hover:scale-[1.02]">Start CIF</button>
+            <button onClick={onBack} className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300">Back to Website</button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-6xl px-6 py-12 lg:px-8">
+      <div className="mb-8 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="text-sm uppercase tracking-[0.3em] text-cyan-300">Customer Intake Form</div>
+          <div className="mt-2 text-2xl font-semibold">Page {page + 1} of 3</div>
+          <p className="mt-2 text-sm text-slate-400">Required fields are marked with an asterisk. Missing required fields will be highlighted before you can continue.</p>
+        </div>
+        <button onClick={onBack} className="rounded-2xl border border-white/15 px-5 py-3 text-sm font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300">Back to Website</button>
+      </div>
+
+      <div className="rounded-[2.5rem] border border-white/10 bg-slate-900/80 p-6 shadow-[0_18px_80px_rgba(2,8,23,0.45)] md:p-8">
+        {page === 0 && (
+          <div className="space-y-8">
+            <section>
+              <h2 className="text-2xl font-semibold">Client Information</h2>
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                {fieldWrap("companyName", <Field label="Company Name" name="companyName" value={data.companyName} onChange={update} required />)}
+                {fieldWrap("contactName", <Field label="Contact Name" name="contactName" value={data.contactName} onChange={update} required />)}
+                <SelectField label="Preferred Contact" name="preferredContact" value={data.preferredContact} onChange={update} options={["Email", "Phone", "Either"]} />
+                {fieldWrap("email", <Field label="Email" name="email" type="email" value={data.email} onChange={update} required />)}
+                {fieldWrap("phone", <Field label="Phone" name="phone" type="tel" value={data.phone} onChange={update} required />)}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold">Fixture & Control Details</h2>
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                {fieldWrap("fixtureManufacturer", <Field label="Fixture Manufacturer" name="fixtureManufacturer" value={data.fixtureManufacturer} onChange={update} required />)}
+                {fieldWrap("fixtureType", <SelectField label="Fixture Type" name="fixtureType" value={data.fixtureType} onChange={update} required options={["Troffer", "Panel", "Downlight", "Linear", "High Bay", "Area/Site", "Wall Pack", "Flood", "Emergency", "Decorative", "Other"]} />)}
+                {fieldWrap("fixtureModel", <Field label="Fixture Model" name="fixtureModel" value={data.fixtureModel} onChange={update} required />)}
+                <SelectField label="Input Voltage" name="fixtureInputVoltage" value={data.fixtureInputVoltage} onChange={update} options={["120V", "277V", "347V", "480V", "Universal 120-277V", "Unknown", "Other"]} />
+                <SelectField label="IP Rating" name="ipRating" value={data.ipRating} onChange={update} options={["Indoor/Not Rated", "IP20", "IP40", "IP54", "IP65", "IP66", "IP67", "Unknown"]} />
+                <SelectField label="Control Type" name="controlType" value={data.controlType} onChange={update} options={["None", "0-10V", "DALI", "DMX", "Phase Dimming", "Wireless", "Sensor", "Networked Controls", "Unknown", "Other"]} />
+                <Field label="Control Model" name="controlModel" value={data.controlModel} onChange={update} />
+                <SelectField label="Mounting Type" name="mountingType" value={data.mountingType} onChange={update} options={["Recessed", "Surface", "Pendant", "Pole", "Wall", "Track", "Suspended", "Unknown", "Other"]} />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold">Driver Information</h2>
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                <Field label="Driver Manufacturer" name="driverManufacturer" value={data.driverManufacturer} onChange={update} />
+                <SelectField label="Output Type" name="driverOutputType" value={data.driverOutputType} onChange={update} options={["Constant Current (CC)", "Constant Voltage (CV)", "Unknown"]} />
+                <Field label="Driver Model" name="driverModel" value={data.driverModel} onChange={update} />
+                <Field label="Output Current / Voltage" name="driverOutput" value={data.driverOutput} onChange={update} placeholder="Example: 700mA or 24V" />
+                <Field label="Driver Input Voltage" name="driverInputVoltage" value={data.driverInputVoltage} onChange={update} />
+                <Field label="# of Outputs per Driver" name="outputsPerDriver" value={data.outputsPerDriver} onChange={update} />
+                <SelectField label="Dimming Method" name="dimmingMethod" value={data.dimmingMethod} onChange={update} options={["None", "0-10V", "DALI", "DMX", "Phase", "PWM", "Wireless", "Unknown", "Other"]} />
+                <Field label="LED Forward Voltage (CC)" name="ledForwardVoltage" value={data.ledForwardVoltage} onChange={update} />
+                <Field label="Current Limiting on LED Load (CV)" name="currentLimiting" value={data.currentLimiting} onChange={update} />
+              </div>
+            </section>
+          </div>
+        )}
+
+        {page === 1 && (
+          <div className="space-y-8">
+            <section>
+              <h2 className="text-2xl font-semibold">Application / Environment</h2>
+              {fieldWrap("applicationConditions", <CheckboxGroup label="Application Conditions" name="applicationConditions" values={data.applicationConditions} onChange={update} required options={["Commercial", "Industrial", "Outdoor", "Retail", "Healthcare", "Residential", "High Temp", "Vibration", "Indoor", "Damp", "Wet"]} />)}
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                <Field label="Daily Hours of Operation" name="dailyHours" value={data.dailyHours} onChange={update} placeholder="Example: 12 hours/day" />
+                <Field label="Geographic Location" name="geographicLocation" value={data.geographicLocation} onChange={update} placeholder="City, State / Site Location" />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold">Issue Description</h2>
+              {fieldWrap("issueTypes", <CheckboxGroup label="Issue (Select all that apply)" name="issueTypes" values={data.issueTypes} onChange={update} required options={["No Output", "Flicker", "Intermittent", "Dimming", "Color Shift", "Comm Failure", "Overheating", "Early Failure", "Out of Box Failure", "Clicking", "Other"]} />)}
+              {data.issueTypes.includes("Other") && <div className="mt-5"><Field label="Other Issue" name="issueOther" value={data.issueOther} onChange={update} /></div>}
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                {fieldWrap("dateFirstObserved", <Field label="Date First Observed" name="dateFirstObserved" type="date" value={data.dateFirstObserved} onChange={update} required />)}
+                <Field label="Failure Rate" name="failureRate" value={data.failureRate} onChange={update} placeholder="Example: 3 of 25 fixtures" />
+                {fieldWrap("repeatable", <SelectField label="Repeatable" name="repeatable" value={data.repeatable} onChange={update} required options={["Yes", "No", "Unknown"]} />)}
+              </div>
+              <div className="mt-5">
+                {fieldWrap("detailedDescription", <TextAreaField label="Detailed Description" name="detailedDescription" value={data.detailedDescription} onChange={update} required placeholder="If repeatable, describe how to reproduce. Otherwise, include all known details." />)}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold">Electrical & Installation</h2>
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                <Field label="Input Voltage" name="electricalInputVoltage" value={data.electricalInputVoltage} onChange={update} />
+                <SelectField label="Grounding Condition" name="groundingCondition" value={data.groundingCondition} onChange={update} options={["Verified Good", "Questionable", "No Ground", "Unknown"]} />
+                <SelectField label="Line Frequency" name="lineFrequency" value={data.lineFrequency} onChange={update} options={["50Hz", "60Hz", "Unknown"]} />
+                <Field label="Recent Electrical Events" name="recentElectricalEvents" value={data.recentElectricalEvents} onChange={update} placeholder="Surge, outage, storm, breaker trip, etc." />
+                <SelectField label="Surge Protection?" name="surgeProtection" value={data.surgeProtection} onChange={update} options={["Yes", "No", "Unknown"]} />
+              </div>
+            </section>
+          </div>
+        )}
+
+        {page === 2 && (
+          <div className="space-y-8">
+            <section>
+              <h2 className="text-2xl font-semibold">Testing & Troubleshooting Already Performed</h2>
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                <SelectField label="Lab Testing" name="labTesting" value={data.labTesting} onChange={update} options={["Yes", "No", "Unknown"]} />
+                <TextAreaField label="Lab Testing Results" name="labResults" value={data.labResults} onChange={update} rows={3} />
+                <SelectField label="Replacement Installed" name="replacementInstalled" value={data.replacementInstalled} onChange={update} options={["Yes", "No", "Unknown"]} />
+                <TextAreaField label="Replacement Results" name="replacementResults" value={data.replacementResults} onChange={update} rows={3} />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold">Requested Services</h2>
+              {fieldWrap("requestedServices", <CheckboxGroup label="Requested Services" name="requestedServices" values={data.requestedServices} onChange={update} required options={["Failure Analysis", "Functional Testing", "Stress Testing", "Technical Report", "Consultation", "Manufacturer Collaboration", "Expert Witness"]} />)}
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold">Timeline & Priority</h2>
+              <div className="mt-5 grid gap-5 md:grid-cols-2">
+                {fieldWrap("expectedTurnaround", <SelectField label="Expected Turnaround Time" name="expectedTurnaround" value={data.expectedTurnaround} onChange={update} required options={["Standard", "Within 1 week", "Within 2 weeks", "Urgent / ASAP", "Not Sure"]} />)}
+                {fieldWrap("priority", <SelectField label="Priority" name="priority" value={data.priority} onChange={update} required options={["Low", "Medium", "High", "Critical"]} />)}
+              </div>
+              <div className="mt-5">
+                <TextAreaField label="Additional Notes" name="additionalNotes" value={data.additionalNotes} onChange={update} rows={4} />
+              </div>
+              <div className="mt-6 rounded-2xl border border-cyan-300/15 bg-cyan-300/10 p-5 text-sm leading-6 text-slate-300">
+                No information is stored by this website. Submitting opens your email client with the completed CIF details. Attach photos, fixture labels, test data, or other supporting files to that email before sending.
+              </div>
+            </section>
+          </div>
+        )}
+
+        <div className="mt-10 flex flex-wrap justify-between gap-4 border-t border-white/10 pt-6">
+          <div className="flex gap-3">
+            {page > 0 && <button onClick={previousPage} className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300">Back</button>}
+            <button onClick={onBack} className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300">Exit CIF</button>
+          </div>
+          {page < 2 ? (
+            <button onClick={nextPage} className="rounded-2xl bg-cyan-300 px-6 py-3 font-medium text-slate-950 transition hover:scale-[1.02]">Next</button>
+          ) : (
+            <button onClick={submitForm} className="rounded-2xl bg-cyan-300 px-6 py-3 font-medium text-slate-950 transition hover:scale-[1.02]">Submit CIF by Email</button>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+
 export default function App() {
   const [transition, setTransition] = useState({
     open: true,
     label: "DavAri Solutions",
   });
+  const [showIntake, setShowIntake] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -109,6 +513,16 @@ export default function App() {
     { id: "contact", label: "Contact" },
   ];
 
+  const openIntake = () => {
+    setShowIntake(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+  };
+
+  const closeIntake = () => {
+    setShowIntake(false);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+  };
+
   const startTransition = (id, label) => {
     setTransition({ open: true, label });
     setTimeout(() => {
@@ -121,6 +535,27 @@ export default function App() {
       setTransition((prev) => ({ ...prev, open: false }));
     }, 980);
   };
+
+  if (showIntake) {
+    return (
+      <div className="min-h-screen scroll-smooth bg-[#020817] text-white">
+        <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.22),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.13),transparent_22%),radial-gradient(circle_at_bottom_right,rgba(15,23,42,0.9),transparent_32%)]" />
+        <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+            <button onClick={closeIntake} className="flex items-center gap-3 text-left">
+              <ShieldLogo className="h-12 w-12" />
+              <div>
+                <div className="text-lg font-semibold tracking-wide text-white">DavAri Solutions</div>
+                <div className="text-[10px] uppercase tracking-[0.35em] text-slate-400">Engineering Insight. Strategic Solutions.</div>
+              </div>
+            </button>
+            <button onClick={closeIntake} className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950">Back to Website</button>
+          </div>
+        </header>
+        <IntakeWorkflow onBack={closeIntake} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen scroll-smooth bg-[#020817] text-white">
@@ -373,8 +808,9 @@ export default function App() {
               <p className="mt-3 max-w-3xl leading-7 text-slate-300">
                 Download the Customer Intake Form (CIF), complete the known fixture and issue details, and email the completed form to info@davarisolutions.com.
               </p>
-              <div className="mt-5">
+              <div className="mt-5 flex flex-wrap gap-4">
                 <DownloadCIFButton variant="secondary" />
+                <CompleteCIFButton variant="secondary" onClick={openIntake} />
               </div>
             </div>
           </div>
@@ -469,7 +905,10 @@ export default function App() {
                     >
                       Call Us
                     </a>
-                    <DownloadCIFButton variant="secondary" />
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <DownloadCIFButton variant="secondary" />
+                      <CompleteCIFButton variant="secondary" onClick={openIntake} />
+                    </div>
                   </div>
                 </div>
               </div>
