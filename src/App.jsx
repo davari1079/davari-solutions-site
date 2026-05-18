@@ -88,7 +88,7 @@ const initialCifData = {
   electricalInputVoltage: "",
   groundingCondition: "",
   lineFrequency: "",
-  recentElectricalEvents: "",
+  recentElectricalEvents: [],
   surgeProtection: "",
   labTesting: "",
   labResults: "",
@@ -99,6 +99,9 @@ const initialCifData = {
   priority: "",
   additionalNotes: "",
 };
+
+const voltageOptions = ["120V", "277V", "347V", "480V", "Universal 120-277V", "Unknown", "Other"];
+const recentElectricalEventOptions = ["None", "Power Surge", "Power Outage", "Storm / Lightning", "Breaker Trip", "Generator / Transfer Event", "Recent Electrical Work", "Control System Change", "Unknown", "Other"];
 
 function Field({ label, name, value, onChange, required = false, type = "text", placeholder = "" }) {
   return (
@@ -193,15 +196,47 @@ function IntakeWorkflow({ onBack }) {
   const [data, setData] = useState(initialCifData);
   const [errors, setErrors] = useState({});
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash;
+      if (hash === "#cif") {
+        setStarted(false);
+        setPage(0);
+        setErrors({});
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      const pageMatch = hash.match(/^#cif-page-(\d)$/);
+      if (pageMatch) {
+        const nextPage = Math.min(2, Math.max(0, Number(pageMatch[1]) - 1));
+        setStarted(true);
+        setPage(nextPage);
+        setErrors({});
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    handlePopState();
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const pushCifHistory = (nextPage, nextStarted = true) => {
+    const nextHash = nextStarted ? `#cif-page-${nextPage + 1}` : "#cif";
+    if (window.location.hash !== nextHash) {
+      window.history.pushState({ view: "cif", page: nextStarted ? nextPage : null }, "", nextHash);
+    }
+  };
+
   const update = (name, value) => {
     setData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: false }));
   };
 
   const pageRequired = [
-    ["companyName", "contactName", "email", "phone", "fixtureManufacturer", "fixtureType", "fixtureModel"],
-    ["applicationConditions", "issueTypes", "dateFirstObserved", "repeatable", "detailedDescription"],
-    ["requestedServices", "expectedTurnaround", "priority"],
+    ["companyName", "contactName", "email", "phone", "fixtureManufacturer", "fixtureType", "fixtureModel", "fixtureInputVoltage", "driverManufacturer", "driverOutputType", "driverModel", "driverInputVoltage"],
+    ["applicationConditions", "issueTypes", "dateFirstObserved", "repeatable", "detailedDescription", "electricalInputVoltage"],
+    ["labTesting", "replacementInstalled", "requestedServices", "expectedTurnaround", "priority"],
   ];
 
   const labelMap = {
@@ -212,14 +247,22 @@ function IntakeWorkflow({ onBack }) {
     fixtureManufacturer: "Fixture Manufacturer",
     fixtureType: "Fixture Type",
     fixtureModel: "Fixture Model",
+    fixtureInputVoltage: "Fixture Input Voltage",
+    driverManufacturer: "Driver Manufacturer",
+    driverOutputType: "Driver Output Type",
+    driverModel: "Driver Model",
+    driverInputVoltage: "Driver Input Voltage",
     applicationConditions: "Application Conditions",
     issueTypes: "Issue Type",
     dateFirstObserved: "Date First Observed",
     repeatable: "Repeatable",
     detailedDescription: "Detailed Description",
+    electricalInputVoltage: "Electrical Input Voltage",
     requestedServices: "Requested Services",
     expectedTurnaround: "Expected Turnaround Time",
     priority: "Priority",
+    labTesting: "Lab Testing",
+    replacementInstalled: "Replacement Installed",
   };
 
   const isEmpty = (value) => Array.isArray(value) ? value.length === 0 : !String(value || "").trim();
@@ -240,14 +283,18 @@ function IntakeWorkflow({ onBack }) {
 
   const nextPage = () => {
     if (validatePage(page)) {
-      setPage((prev) => prev + 1);
+      const next = Math.min(2, page + 1);
+      setPage(next);
+      pushCifHistory(next, true);
       setErrors({});
       setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
     }
   };
 
   const previousPage = () => {
-    setPage((prev) => Math.max(0, prev - 1));
+    const previous = Math.max(0, page - 1);
+    setPage(previous);
+    pushCifHistory(previous, true);
     setErrors({});
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
@@ -256,7 +303,7 @@ function IntakeWorkflow({ onBack }) {
     if (!validatePage(2)) return;
 
     const submittedDate = new Date().toLocaleDateString();
-    const body = `DavAri Solutions Customer Intake Form (CIF)\n\nSubmitted Date: ${submittedDate}\n\nCLIENT INFORMATION\nCompany Name: ${data.companyName}\nContact Name: ${data.contactName}\nPreferred Contact: ${data.preferredContact}\nEmail: ${data.email}\nPhone: ${data.phone}\n\nFIXTURE & CONTROL DETAILS\nManufacturer: ${data.fixtureManufacturer}\nFixture Type: ${data.fixtureType}\nModel: ${data.fixtureModel}\nInput Voltage: ${data.fixtureInputVoltage}\nIP Rating: ${data.ipRating}\nControl Type: ${data.controlType}\nControl Model: ${data.controlModel}\nMounting Type: ${data.mountingType}\n\nDRIVER INFORMATION\nManufacturer: ${data.driverManufacturer}\nOutput Type: ${data.driverOutputType}\nModel: ${data.driverModel}\nOutput Current/Voltage: ${data.driverOutput}\nInput Voltage: ${data.driverInputVoltage}\n# of Outputs per Driver: ${data.outputsPerDriver}\nDimming Method: ${data.dimmingMethod}\nLED Forward Voltage: ${data.ledForwardVoltage}\nCurrent Limiting on LED Load: ${data.currentLimiting}\n\nAPPLICATION / ENVIRONMENT\nApplication Conditions: ${data.applicationConditions.join(", ")}\nDaily Hours of Operation: ${data.dailyHours}\nGeographic Location: ${data.geographicLocation}\n\nISSUE DESCRIPTION\nIssue Types: ${data.issueTypes.join(", ")}${data.issueOther ? `, Other: ${data.issueOther}` : ""}\nDate First Observed: ${data.dateFirstObserved}\nFailure Rate: ${data.failureRate}\nRepeatable: ${data.repeatable}\nDetailed Description: ${data.detailedDescription}\n\nELECTRICAL & INSTALLATION\nInput Voltage: ${data.electricalInputVoltage}\nGrounding Condition: ${data.groundingCondition}\nLine Frequency: ${data.lineFrequency}\nRecent Electrical Events: ${data.recentElectricalEvents}\nSurge Protection: ${data.surgeProtection}\n\nTESTING & TROUBLESHOOTING\nLab Testing: ${data.labTesting}\nLab Results: ${data.labResults}\nReplacement Installed: ${data.replacementInstalled}\nReplacement Results: ${data.replacementResults}\n\nREQUESTED SERVICES\n${data.requestedServices.join(", ")}\nExpected Turnaround: ${data.expectedTurnaround}\nPriority: ${data.priority}\nAdditional Notes: ${data.additionalNotes}\n\nNote: This website form does not store responses. Please attach photos, labels, test data, or supporting files directly to this email before sending.`;
+    const body = `DavAri Solutions Customer Intake Form (CIF)\n\nSubmitted Date: ${submittedDate}\n\nCLIENT INFORMATION\nCompany Name: ${data.companyName}\nContact Name: ${data.contactName}\nPreferred Contact: ${data.preferredContact}\nEmail: ${data.email}\nPhone: ${data.phone}\n\nFIXTURE & CONTROL DETAILS\nManufacturer: ${data.fixtureManufacturer}\nFixture Type: ${data.fixtureType}\nModel: ${data.fixtureModel}\nInput Voltage: ${data.fixtureInputVoltage}\nIP Rating: ${data.ipRating}\nControl Type: ${data.controlType}\nControl Model: ${data.controlModel}\nMounting Type: ${data.mountingType}\n\nDRIVER INFORMATION\nManufacturer: ${data.driverManufacturer}\nOutput Type: ${data.driverOutputType}\nModel: ${data.driverModel}\nOutput Current/Voltage: ${data.driverOutput}\nInput Voltage: ${data.driverInputVoltage}\n# of Outputs per Driver: ${data.outputsPerDriver}\nDimming Method: ${data.dimmingMethod}\nLED Forward Voltage: ${data.ledForwardVoltage}\nCurrent Limiting on LED Load: ${data.currentLimiting}\n\nAPPLICATION / ENVIRONMENT\nApplication Conditions: ${data.applicationConditions.join(", ")}\nDaily Hours of Operation: ${data.dailyHours}\nGeographic Location: ${data.geographicLocation}\n\nISSUE DESCRIPTION\nIssue Types: ${data.issueTypes.join(", ")}${data.issueOther ? `, Other: ${data.issueOther}` : ""}\nDate First Observed: ${data.dateFirstObserved}\nFailure Rate: ${data.failureRate}\nRepeatable: ${data.repeatable}\nDetailed Description: ${data.detailedDescription}\n\nELECTRICAL & INSTALLATION\nInput Voltage: ${data.electricalInputVoltage}\nGrounding Condition: ${data.groundingCondition}\nLine Frequency: ${data.lineFrequency}\nRecent Electrical Events: ${data.recentElectricalEvents.join(", ")}\nSurge Protection: ${data.surgeProtection}\n\nTESTING & TROUBLESHOOTING\nLab Testing: ${data.labTesting}\nLab Results: ${data.labResults}\nReplacement Installed: ${data.replacementInstalled}\nReplacement Results: ${data.replacementResults}\n\nREQUESTED SERVICES\n${data.requestedServices.join(", ")}\nExpected Turnaround: ${data.expectedTurnaround}\nPriority: ${data.priority}\nAdditional Notes: ${data.additionalNotes}\n\nNote: This website form does not store responses. Please attach photos, labels, test data, or supporting files directly to this email before sending.`;
 
     const mailto = `mailto:info@davarisolutions.com?subject=${encodeURIComponent(`DavAri CIF Submission - ${data.companyName}`)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailto;
@@ -289,7 +336,7 @@ function IntakeWorkflow({ onBack }) {
             </div>
           </div>
           <div className="mt-8 flex flex-wrap gap-4">
-            <button onClick={() => setStarted(true)} className="rounded-2xl bg-cyan-300 px-6 py-3 font-medium text-slate-950 transition hover:scale-[1.02]">Start CIF</button>
+            <button onClick={() => { setStarted(true); setPage(0); pushCifHistory(0, true); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }} className="rounded-2xl bg-cyan-300 px-6 py-3 font-medium text-slate-950 transition hover:scale-[1.02]">Start CIF</button>
             <button onClick={onBack} className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300">Back to Website</button>
           </div>
         </div>
@@ -328,7 +375,7 @@ function IntakeWorkflow({ onBack }) {
                 {fieldWrap("fixtureManufacturer", <Field label="Fixture Manufacturer" name="fixtureManufacturer" value={data.fixtureManufacturer} onChange={update} required />)}
                 {fieldWrap("fixtureType", <SelectField label="Fixture Type" name="fixtureType" value={data.fixtureType} onChange={update} required options={["Troffer", "Panel", "Downlight", "Linear", "High Bay", "Area/Site", "Wall Pack", "Flood", "Emergency", "Decorative", "Other"]} />)}
                 {fieldWrap("fixtureModel", <Field label="Fixture Model" name="fixtureModel" value={data.fixtureModel} onChange={update} required />)}
-                <SelectField label="Input Voltage" name="fixtureInputVoltage" value={data.fixtureInputVoltage} onChange={update} options={["120V", "277V", "347V", "480V", "Universal 120-277V", "Unknown", "Other"]} />
+                {fieldWrap("fixtureInputVoltage", <SelectField label="Input Voltage" name="fixtureInputVoltage" value={data.fixtureInputVoltage} onChange={update} required options={voltageOptions} />)}
                 <SelectField label="IP Rating" name="ipRating" value={data.ipRating} onChange={update} options={["Indoor/Not Rated", "IP20", "IP40", "IP54", "IP65", "IP66", "IP67", "Unknown"]} />
                 <SelectField label="Control Type" name="controlType" value={data.controlType} onChange={update} options={["None", "0-10V", "DALI", "DMX", "Phase Dimming", "Wireless", "Sensor", "Networked Controls", "Unknown", "Other"]} />
                 <Field label="Control Model" name="controlModel" value={data.controlModel} onChange={update} />
@@ -339,15 +386,15 @@ function IntakeWorkflow({ onBack }) {
             <section>
               <h2 className="text-2xl font-semibold">Driver Information</h2>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                <Field label="Driver Manufacturer" name="driverManufacturer" value={data.driverManufacturer} onChange={update} />
-                <SelectField label="Output Type" name="driverOutputType" value={data.driverOutputType} onChange={update} options={["Constant Current (CC)", "Constant Voltage (CV)", "Unknown"]} />
-                <Field label="Driver Model" name="driverModel" value={data.driverModel} onChange={update} />
+                {fieldWrap("driverManufacturer", <Field label="Driver Manufacturer" name="driverManufacturer" value={data.driverManufacturer} onChange={update} required />)}
+                {fieldWrap("driverOutputType", <SelectField label="Output Type" name="driverOutputType" value={data.driverOutputType} onChange={update} required options={["Constant Current (CC)", "Constant Voltage (CV)", "Programmable", "Unknown"]} />)}
+                {fieldWrap("driverModel", <Field label="Driver Model" name="driverModel" value={data.driverModel} onChange={update} required />)}
                 <Field label="Output Current / Voltage" name="driverOutput" value={data.driverOutput} onChange={update} placeholder="Example: 700mA or 24V" />
-                <Field label="Driver Input Voltage" name="driverInputVoltage" value={data.driverInputVoltage} onChange={update} />
+                {fieldWrap("driverInputVoltage", <SelectField label="Driver Input Voltage" name="driverInputVoltage" value={data.driverInputVoltage} onChange={update} required options={voltageOptions} />)}
                 <Field label="# of Outputs per Driver" name="outputsPerDriver" value={data.outputsPerDriver} onChange={update} />
                 <SelectField label="Dimming Method" name="dimmingMethod" value={data.dimmingMethod} onChange={update} options={["None", "0-10V", "DALI", "DMX", "Phase", "PWM", "Wireless", "Unknown", "Other"]} />
-                <Field label="LED Forward Voltage (CC)" name="ledForwardVoltage" value={data.ledForwardVoltage} onChange={update} />
-                <Field label="Current Limiting on LED Load (CV)" name="currentLimiting" value={data.currentLimiting} onChange={update} />
+                <Field label="LED Forward Voltage (CC)" name="ledForwardVoltage" value={data.ledForwardVoltage} onChange={update} placeholder="Example: 36V, 48V, or 72V string voltage" />
+                <Field label="Current Limiting on LED Load (CV)" name="currentLimiting" value={data.currentLimiting} onChange={update} placeholder="Example: Resistor, onboard LED current regulation, fuse, unknown" />
               </div>
             </section>
           </div>
@@ -381,10 +428,10 @@ function IntakeWorkflow({ onBack }) {
             <section>
               <h2 className="text-2xl font-semibold">Electrical & Installation</h2>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                <Field label="Input Voltage" name="electricalInputVoltage" value={data.electricalInputVoltage} onChange={update} />
+                {fieldWrap("electricalInputVoltage", <SelectField label="Input Voltage" name="electricalInputVoltage" value={data.electricalInputVoltage} onChange={update} required options={voltageOptions} />)}
                 <SelectField label="Grounding Condition" name="groundingCondition" value={data.groundingCondition} onChange={update} options={["Verified Good", "Questionable", "No Ground", "Unknown"]} />
                 <SelectField label="Line Frequency" name="lineFrequency" value={data.lineFrequency} onChange={update} options={["50Hz", "60Hz", "Unknown"]} />
-                <Field label="Recent Electrical Events" name="recentElectricalEvents" value={data.recentElectricalEvents} onChange={update} placeholder="Surge, outage, storm, breaker trip, etc." />
+                <CheckboxGroup label="Recent Electrical Events" name="recentElectricalEvents" values={data.recentElectricalEvents} onChange={update} options={recentElectricalEventOptions} />
                 <SelectField label="Surge Protection?" name="surgeProtection" value={data.surgeProtection} onChange={update} options={["Yes", "No", "Unknown"]} />
               </div>
             </section>
@@ -396,9 +443,9 @@ function IntakeWorkflow({ onBack }) {
             <section>
               <h2 className="text-2xl font-semibold">Testing & Troubleshooting Already Performed</h2>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                <SelectField label="Lab Testing" name="labTesting" value={data.labTesting} onChange={update} options={["Yes", "No", "Unknown"]} />
+                {fieldWrap("labTesting", <SelectField label="Lab Testing" name="labTesting" value={data.labTesting} onChange={update} required options={["Yes", "No", "Unknown"]} />)}
                 <TextAreaField label="Lab Testing Results" name="labResults" value={data.labResults} onChange={update} rows={3} />
-                <SelectField label="Replacement Installed" name="replacementInstalled" value={data.replacementInstalled} onChange={update} options={["Yes", "No", "Unknown"]} />
+                {fieldWrap("replacementInstalled", <SelectField label="Replacement Installed" name="replacementInstalled" value={data.replacementInstalled} onChange={update} required options={["Yes", "No", "Unknown"]} />)}
                 <TextAreaField label="Replacement Results" name="replacementResults" value={data.replacementResults} onChange={update} rows={3} />
               </div>
             </section>
@@ -513,13 +560,30 @@ export default function App() {
     { id: "contact", label: "Contact" },
   ];
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const isCifRoute = window.location.hash === "#cif" || window.location.hash.startsWith("#cif-page-");
+      setShowIntake(isCifRoute);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    handlePopState();
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const openIntake = () => {
     setShowIntake(true);
+    if (!window.location.hash.startsWith("#cif")) {
+      window.history.pushState({ view: "cif-start" }, "", "#cif");
+    }
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
 
   const closeIntake = () => {
     setShowIntake(false);
+    if (window.location.hash.startsWith("#cif")) {
+      window.history.pushState({}, "", window.location.pathname + window.location.search);
+    }
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   };
 
@@ -806,11 +870,11 @@ export default function App() {
             <div className="mt-10 rounded-[2rem] border border-cyan-300/15 bg-gradient-to-r from-cyan-400/8 via-white/0 to-blue-400/8 p-6">
               <div className="text-lg font-semibold">Start with the intake form</div>
               <p className="mt-3 max-w-3xl leading-7 text-slate-300">
-                Download the Customer Intake Form (CIF), complete the known fixture and issue details, and email the completed form to info@davarisolutions.com.
+                Complete the Customer Intake Form (CIF) online in one sitting, or download the PDF version if you prefer to complete it offline.
               </p>
               <div className="mt-5 flex flex-wrap gap-4">
-                <DownloadCIFButton variant="secondary" />
                 <CompleteCIFButton variant="secondary" onClick={openIntake} />
+                <DownloadCIFButton variant="secondary" />
               </div>
             </div>
           </div>
@@ -906,8 +970,8 @@ export default function App() {
                       Call Us
                     </a>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                      <DownloadCIFButton variant="secondary" />
                       <CompleteCIFButton variant="secondary" onClick={openIntake} />
+                      <DownloadCIFButton variant="secondary" />
                     </div>
                   </div>
                 </div>
