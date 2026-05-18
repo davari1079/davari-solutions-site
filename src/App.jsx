@@ -428,11 +428,15 @@ function IntakeWorkflow({ onBack }) {
             <section>
               <h2 className="text-2xl font-semibold">Electrical & Installation</h2>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                {fieldWrap("electricalInputVoltage", <SelectField label="Input Voltage" name="electricalInputVoltage" value={data.electricalInputVoltage} onChange={update} required options={voltageOptions} />)}
-                <SelectField label="Grounding Condition" name="groundingCondition" value={data.groundingCondition} onChange={update} options={["Verified Good", "Questionable", "No Ground", "Unknown"]} />
-                <SelectField label="Line Frequency" name="lineFrequency" value={data.lineFrequency} onChange={update} options={["50Hz", "60Hz", "Unknown"]} />
-                <CheckboxGroup label="Recent Electrical Events" name="recentElectricalEvents" values={data.recentElectricalEvents} onChange={update} options={recentElectricalEventOptions} />
-                <SelectField label="Surge Protection?" name="surgeProtection" value={data.surgeProtection} onChange={update} options={["Yes", "No", "Unknown"]} />
+                <div className="space-y-5">
+                  {fieldWrap("electricalInputVoltage", <SelectField label="Input Voltage" name="electricalInputVoltage" value={data.electricalInputVoltage} onChange={update} required options={voltageOptions} />)}
+                  <SelectField label="Line Frequency" name="lineFrequency" value={data.lineFrequency} onChange={update} options={["50Hz", "60Hz", "Unknown"]} />
+                  <SelectField label="Surge Protection?" name="surgeProtection" value={data.surgeProtection} onChange={update} options={["Yes", "No", "Unknown"]} />
+                  <SelectField label="Grounding Condition" name="groundingCondition" value={data.groundingCondition} onChange={update} options={["Verified Good", "Questionable", "No Ground", "Unknown"]} />
+                </div>
+                <div>
+                  <CheckboxGroup label="Recent Electrical Events" name="recentElectricalEvents" values={data.recentElectricalEvents} onChange={update} options={recentElectricalEventOptions} />
+                </div>
               </div>
             </section>
           </div>
