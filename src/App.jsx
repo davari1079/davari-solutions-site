@@ -103,12 +103,79 @@ const initialCifData = {
 const voltageOptions = ["120V", "277V", "347V", "480V", "Universal 120-277V", "Unknown", "Other"];
 const recentElectricalEventOptions = ["None", "Power Surge", "Power Outage", "Storm / Lightning", "Breaker Trip", "Generator / Transfer Event", "Recent Electrical Work", "Control System Change", "Unknown", "Other"];
 
-function Field({ label, name, value, onChange, required = false, type = "text", placeholder = "" }) {
+const fieldHelp = {
+  preferredContact: "Choose how DavAri should follow up if clarification is needed. If both methods work, select the best primary option.",
+  fixtureManufacturer: "Use the fixture/luminaire manufacturer from the label, specification sheet, or client documentation. Private-label brands are acceptable.",
+  fixtureModel: "Enter the fixture model, catalog number, or part number. Exact model information helps with datasheet review, ratings, options, and intended application.",
+  fixtureType: "Select the physical luminaire category, such as troffer, panel, high bay, downlight, area light, wall pack, flood light, or similar.",
+  fixtureInputVoltage: "Use the fixture or system rated input voltage, such as 120 VAC, 277 VAC, 120-277 VAC, 347 VAC, or 480 VAC. Select Unknown if not available.",
+  ipRating: "Ingress Protection rating for dust and water protection. Examples: IP20 indoor dry, IP65 outdoor/wet, IP66 harsh outdoor. Use Unknown if not listed.",
+  controlType: "How the fixture is controlled, such as switch only, 0-10V, DALI, DMX, phase dimming, wireless, occupancy sensor, daylight sensor, or networked control.",
+  controlModel: "Enter the model number of the external or internal control device if known, such as dimmer, sensor, gateway, node, or control module.",
+  mountingType: "How the fixture is physically installed or supported. Examples: recessed, surface mount, suspended, pendant, wall mount, pole mount, slipfitter, yoke, or tenon/mast arm.",
+  driverManufacturer: "Use the LED driver manufacturer from the driver label, bill of materials, or fixture documentation. Example: eldoLED, OSRAM, Inventronics, Mean Well, Fulham, or similar.",
+  driverModel: "Enter the driver model, catalog number, or part number. This is important for output range, dimming protocol, protection behavior, and datasheet review.",
+  driverInputVoltage: "Use the rated driver input voltage, such as 120-277 VAC, 347 VAC, 480 VAC, or DC input if applicable. Select Unknown if not available.",
+  driverOutputType: "Select whether the driver regulates current or voltage. Constant Current (CC) and Constant Voltage (CV) drive different test approaches.",
+  driverOutput: "Enter the regulated output value depending on driver type. For CC use current such as 700 mA; for CV use voltage such as 24 VDC. Include units when possible.",
+  outputsPerDriver: "Number of output channels or LED loads connected to the driver. Examples: 1 output, 2 outputs, or 4-channel tunable/RGBW driver.",
+  dimmingMethod: "Electrical or digital method used to dim/control the driver. Examples: 0-10V, DALI, DMX, phase cut, PWM, wireless, none, or unknown.",
+  ledForwardVoltage: "For constant-current systems only, enter the LED load forward voltage or voltage range if known. If unknown, do not guess.",
+  currentLimiting: "For constant-voltage systems, identify whether the LED load/module includes current limiting such as resistors, regulators, or module electronics.",
+  applicationConditions: "Select the market/use case and environmental conditions that may affect fixture or driver stress, such as heat, vibration, damp/wet exposure, or outdoor use.",
+  dailyHours: "Approximate hours per day the fixture operates. Examples: 8 hr/day office, 12 hr/day retail, or 24/7 facility.",
+  geographicLocation: "City, state, region, or installation geography. This can help assess climate, humidity, lightning exposure, and voltage norms.",
+  issueTypes: "Select symptoms only. Do not force a root-cause conclusion here; analysis happens later in the FAR or other deliverable.",
+  dateFirstObserved: "Use the exact date if known. If not known, use the best approximate timing in the description field.",
+  failureRate: "Capture how much of the installed population is affected. Examples: 3 of 50 fixtures, 6%, all units on one circuit, or one location only.",
+  repeatable: "Choose Yes if the issue can be reproduced under known conditions, No if random, or Unknown if not tested.",
+  detailedDescription: "Describe what happens, when it happens, whether power cycling changes it, what controls are doing, and whether conditions matter.",
+  electricalInputVoltage: "Measured or expected supply voltage at the installation. Note nominal versus measured values in the description if known.",
+  lineFrequency: "Supply frequency. 60 Hz is common in the U.S.; 50 Hz may apply in some markets. Select Unknown if not available.",
+  surgeProtection: "Indicate whether surge protection is installed. This matters for outdoor, roadway, industrial, and storm-prone locations.",
+  groundingCondition: "Indicate whether grounding is present and believed correct. Select Unknown if it has not been verified.",
+  recentElectricalEvents: "Select any abnormal electrical events before the issue, such as lightning, surge, outage, brownout, generator transfer, breaker trip, wiring changes, or control changes.",
+  labTesting: "Indicate whether units were already tested in a lab or controlled setting. If yes, summarize setup, equipment, results, and photos in the results field.",
+  labResults: "Summarize what happened during testing, including whether the unit worked on bench, failed again, or behaved differently than in the field.",
+  replacementInstalled: "Indicate whether any fixture, driver, LED board, control device, sensor, wiring, dimmer, or related component was replaced.",
+  replacementResults: "Describe what happened after replacement. Example: replacement driver fixed issue, issue remained, or failure moved with the driver.",
+  requestedServices: "Select the service path requested. Failure Analysis usually leads to FAR; consultation may be virtual review or troubleshooting strategy.",
+  expectedTurnaround: "Client expectation for response, testing, or report completion. Examples: 24-48 hr initial review, 1 week, 2 weeks, urgent field issue.",
+  priority: "Critical usually means safety issue, large field impact, urgent customer escalation, legal/compliance risk, or business interruption.",
+  additionalNotes: "Capture anything not covered elsewhere: photos sent separately, spec sheets available, serial numbers, warranty claim, site contact, or installer notes."
+};
+
+function InfoTip({ text }) {
+  if (!text) return null;
+  return (
+    <span className="group relative inline-flex align-middle">
+      <button
+        type="button"
+        aria-label="Field guidance"
+        className="ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/10 text-[10px] font-semibold leading-none text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950 focus:bg-cyan-300 focus:text-slate-950 focus:outline-none"
+      >
+        i
+      </button>
+      <span className="pointer-events-none absolute left-1/2 top-6 z-30 hidden w-72 -translate-x-1/2 rounded-xl border border-cyan-300/20 bg-slate-950 px-4 py-3 text-left text-xs font-normal leading-5 text-slate-200 shadow-2xl group-hover:block group-focus-within:block">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+function FieldLabel({ label, required, info }) {
+  return (
+    <span className="text-sm text-slate-300">
+      {label}{required && <span className="text-cyan-300"> *</span>}
+      <InfoTip text={info} />
+    </span>
+  );
+}
+
+function Field({ label, name, value, onChange, required = false, type = "text", placeholder = "", info = "" }) {
   return (
     <label className="block">
-      <span className="text-sm text-slate-300">
-        {label}{required && <span className="text-cyan-300"> *</span>}
-      </span>
+      <FieldLabel label={label} required={required} info={info} />
       <input
         type={type}
         name={name}
@@ -121,12 +188,10 @@ function Field({ label, name, value, onChange, required = false, type = "text", 
   );
 }
 
-function SelectField({ label, name, value, onChange, options, required = false }) {
+function SelectField({ label, name, value, onChange, options, required = false, info = "" }) {
   return (
     <label className="block">
-      <span className="text-sm text-slate-300">
-        {label}{required && <span className="text-cyan-300"> *</span>}
-      </span>
+      <FieldLabel label={label} required={required} info={info} />
       <select
         name={name}
         value={value}
@@ -142,12 +207,10 @@ function SelectField({ label, name, value, onChange, options, required = false }
   );
 }
 
-function TextAreaField({ label, name, value, onChange, required = false, rows = 4, placeholder = "" }) {
+function TextAreaField({ label, name, value, onChange, required = false, rows = 4, placeholder = "", info = "" }) {
   return (
     <label className="block">
-      <span className="text-sm text-slate-300">
-        {label}{required && <span className="text-cyan-300"> *</span>}
-      </span>
+      <FieldLabel label={label} required={required} info={info} />
       <textarea
         name={name}
         value={value}
@@ -160,7 +223,7 @@ function TextAreaField({ label, name, value, onChange, required = false, rows = 
   );
 }
 
-function CheckboxGroup({ label, name, values, onChange, options, required = false }) {
+function CheckboxGroup({ label, name, values, onChange, options, required = false, info = "" }) {
   const toggle = (option) => {
     const next = values.includes(option)
       ? values.filter((value) => value !== option)
@@ -170,8 +233,8 @@ function CheckboxGroup({ label, name, values, onChange, options, required = fals
 
   return (
     <div>
-      <div className="text-sm text-slate-300">
-        {label}{required && <span className="text-cyan-300"> *</span>}
+      <div>
+        <FieldLabel label={label} required={required} info={info} />
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {options.map((option) => (
@@ -363,7 +426,7 @@ function IntakeWorkflow({ onBack }) {
               <div className="mt-5 grid gap-5 md:grid-cols-2">
                 {fieldWrap("companyName", <Field label="Company Name" name="companyName" value={data.companyName} onChange={update} required />)}
                 {fieldWrap("contactName", <Field label="Contact Name" name="contactName" value={data.contactName} onChange={update} required />)}
-                <SelectField label="Preferred Contact" name="preferredContact" value={data.preferredContact} onChange={update} options={["Email", "Phone", "Either"]} />
+                <SelectField label="Preferred Contact" name="preferredContact" value={data.preferredContact} onChange={update} options={["Email", "Phone", "Either"]} info={fieldHelp.preferredContact} />
                 {fieldWrap("email", <Field label="Email" name="email" type="email" value={data.email} onChange={update} required />)}
                 {fieldWrap("phone", <Field label="Phone" name="phone" type="tel" value={data.phone} onChange={update} required />)}
               </div>
@@ -372,29 +435,29 @@ function IntakeWorkflow({ onBack }) {
             <section>
               <h2 className="text-2xl font-semibold">Fixture & Control Details</h2>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                {fieldWrap("fixtureManufacturer", <Field label="Fixture Manufacturer" name="fixtureManufacturer" value={data.fixtureManufacturer} onChange={update} required />)}
-                {fieldWrap("fixtureType", <SelectField label="Fixture Type" name="fixtureType" value={data.fixtureType} onChange={update} required options={["Troffer", "Panel", "Downlight", "Linear", "High Bay", "Area/Site", "Wall Pack", "Flood", "Emergency", "Decorative", "Other"]} />)}
-                {fieldWrap("fixtureModel", <Field label="Fixture Model" name="fixtureModel" value={data.fixtureModel} onChange={update} required />)}
-                {fieldWrap("fixtureInputVoltage", <SelectField label="Input Voltage" name="fixtureInputVoltage" value={data.fixtureInputVoltage} onChange={update} required options={voltageOptions} />)}
-                <SelectField label="IP Rating" name="ipRating" value={data.ipRating} onChange={update} options={["Indoor/Not Rated", "IP20", "IP40", "IP54", "IP65", "IP66", "IP67", "Unknown"]} />
-                <SelectField label="Control Type" name="controlType" value={data.controlType} onChange={update} options={["None", "0-10V", "DALI", "DMX", "Phase Dimming", "Wireless", "Sensor", "Networked Controls", "Unknown", "Other"]} />
-                <Field label="Control Model" name="controlModel" value={data.controlModel} onChange={update} />
-                <SelectField label="Mounting Type" name="mountingType" value={data.mountingType} onChange={update} options={["Recessed", "Surface", "Pendant", "Pole", "Wall", "Track", "Suspended", "Unknown", "Other"]} />
+                {fieldWrap("fixtureManufacturer", <Field label="Fixture Manufacturer" name="fixtureManufacturer" value={data.fixtureManufacturer} onChange={update} required info={fieldHelp.fixtureManufacturer} />)}
+                {fieldWrap("fixtureType", <SelectField label="Fixture Type" name="fixtureType" value={data.fixtureType} onChange={update} required options={["Troffer", "Panel", "Downlight", "Linear", "High Bay", "Area/Site", "Wall Pack", "Flood", "Emergency", "Decorative", "Other"]} info={fieldHelp.fixtureType} />)}
+                {fieldWrap("fixtureModel", <Field label="Fixture Model" name="fixtureModel" value={data.fixtureModel} onChange={update} required info={fieldHelp.fixtureModel} />)}
+                {fieldWrap("fixtureInputVoltage", <SelectField label="Input Voltage" name="fixtureInputVoltage" value={data.fixtureInputVoltage} onChange={update} required options={voltageOptions} info={fieldHelp.fixtureInputVoltage} />)}
+                <SelectField label="IP Rating" name="ipRating" value={data.ipRating} onChange={update} options={["Indoor/Not Rated", "IP20", "IP40", "IP54", "IP65", "IP66", "IP67", "Unknown"]} info={fieldHelp.ipRating} />
+                <SelectField label="Control Type" name="controlType" value={data.controlType} onChange={update} options={["None", "0-10V", "DALI", "DMX", "Phase Dimming", "Wireless", "Sensor", "Networked Controls", "Unknown", "Other"]} info={fieldHelp.controlType} />
+                <Field label="Control Model" name="controlModel" value={data.controlModel} onChange={update} info={fieldHelp.controlModel} />
+                <SelectField label="Mounting Type" name="mountingType" value={data.mountingType} onChange={update} options={["Recessed", "Surface", "Pendant", "Pole", "Wall", "Track", "Suspended", "Unknown", "Other"]} info={fieldHelp.mountingType} />
               </div>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold">Driver Information</h2>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                {fieldWrap("driverManufacturer", <Field label="Driver Manufacturer" name="driverManufacturer" value={data.driverManufacturer} onChange={update} required />)}
-                {fieldWrap("driverOutputType", <SelectField label="Output Type" name="driverOutputType" value={data.driverOutputType} onChange={update} required options={["Constant Current (CC)", "Constant Voltage (CV)", "Programmable", "Unknown"]} />)}
-                {fieldWrap("driverModel", <Field label="Driver Model" name="driverModel" value={data.driverModel} onChange={update} required />)}
-                <Field label="Output Current / Voltage" name="driverOutput" value={data.driverOutput} onChange={update} placeholder="Example: 700mA or 24V" />
-                {fieldWrap("driverInputVoltage", <SelectField label="Driver Input Voltage" name="driverInputVoltage" value={data.driverInputVoltage} onChange={update} required options={voltageOptions} />)}
-                <Field label="# of Outputs per Driver" name="outputsPerDriver" value={data.outputsPerDriver} onChange={update} />
-                <SelectField label="Dimming Method" name="dimmingMethod" value={data.dimmingMethod} onChange={update} options={["None", "0-10V", "DALI", "DMX", "Phase", "PWM", "Wireless", "Unknown", "Other"]} />
-                <Field label="LED Forward Voltage (CC)" name="ledForwardVoltage" value={data.ledForwardVoltage} onChange={update} placeholder="Example: 36V, 48V, or 72V string voltage" />
-                <Field label="Current Limiting on LED Load (CV)" name="currentLimiting" value={data.currentLimiting} onChange={update} placeholder="Example: Resistor, onboard LED current regulation, fuse, unknown" />
+                {fieldWrap("driverManufacturer", <Field label="Driver Manufacturer" name="driverManufacturer" value={data.driverManufacturer} onChange={update} required info={fieldHelp.driverManufacturer} />)}
+                {fieldWrap("driverOutputType", <SelectField label="Output Type" name="driverOutputType" value={data.driverOutputType} onChange={update} required options={["Constant Current (CC)", "Constant Voltage (CV)", "Programmable", "Unknown"]} info={fieldHelp.driverOutputType} />)}
+                {fieldWrap("driverModel", <Field label="Driver Model" name="driverModel" value={data.driverModel} onChange={update} required info={fieldHelp.driverModel} />)}
+                <Field label="Output Current / Voltage" name="driverOutput" value={data.driverOutput} onChange={update} placeholder="Example: 700mA or 24V" info={fieldHelp.driverOutput} />
+                {fieldWrap("driverInputVoltage", <SelectField label="Driver Input Voltage" name="driverInputVoltage" value={data.driverInputVoltage} onChange={update} required options={voltageOptions} info={fieldHelp.driverInputVoltage} />)}
+                <Field label="# of Outputs per Driver" name="outputsPerDriver" value={data.outputsPerDriver} onChange={update} info={fieldHelp.outputsPerDriver} />
+                <SelectField label="Dimming Method" name="dimmingMethod" value={data.dimmingMethod} onChange={update} options={["None", "0-10V", "DALI", "DMX", "Phase", "PWM", "Wireless", "Unknown", "Other"]} info={fieldHelp.dimmingMethod} />
+                <Field label="LED Forward Voltage (CC)" name="ledForwardVoltage" value={data.ledForwardVoltage} onChange={update} placeholder="Example: 36V, 48V, or 72V string voltage" info={fieldHelp.ledForwardVoltage} />
+                <Field label="Current Limiting on LED Load (CV)" name="currentLimiting" value={data.currentLimiting} onChange={update} placeholder="Example: Resistor, onboard LED current regulation, fuse, unknown" info={fieldHelp.currentLimiting} />
               </div>
             </section>
           </div>
@@ -404,24 +467,24 @@ function IntakeWorkflow({ onBack }) {
           <div className="space-y-8">
             <section>
               <h2 className="text-2xl font-semibold">Application / Environment</h2>
-              {fieldWrap("applicationConditions", <CheckboxGroup label="Application Conditions" name="applicationConditions" values={data.applicationConditions} onChange={update} required options={["Commercial", "Industrial", "Outdoor", "Retail", "Healthcare", "Residential", "High Temp", "Vibration", "Indoor", "Damp", "Wet"]} />)}
+              {fieldWrap("applicationConditions", <CheckboxGroup label="Application Conditions" name="applicationConditions" values={data.applicationConditions} onChange={update} required options={["Commercial", "Industrial", "Outdoor", "Retail", "Healthcare", "Residential", "High Temp", "Vibration", "Indoor", "Damp", "Wet"]} info={fieldHelp.applicationConditions} />)}
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                <Field label="Daily Hours of Operation" name="dailyHours" value={data.dailyHours} onChange={update} placeholder="Example: 12 hours/day" />
-                <Field label="Geographic Location" name="geographicLocation" value={data.geographicLocation} onChange={update} placeholder="City, State / Site Location" />
+                <Field label="Daily Hours of Operation" name="dailyHours" value={data.dailyHours} onChange={update} placeholder="Example: 12 hours/day" info={fieldHelp.dailyHours} />
+                <Field label="Geographic Location" name="geographicLocation" value={data.geographicLocation} onChange={update} placeholder="City, State / Site Location" info={fieldHelp.geographicLocation} />
               </div>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold">Issue Description</h2>
-              {fieldWrap("issueTypes", <CheckboxGroup label="Issue (Select all that apply)" name="issueTypes" values={data.issueTypes} onChange={update} required options={["No Output", "Flicker", "Intermittent", "Dimming", "Color Shift", "Comm Failure", "Overheating", "Early Failure", "Out of Box Failure", "Clicking", "Other"]} />)}
+              {fieldWrap("issueTypes", <CheckboxGroup label="Issue (Select all that apply)" name="issueTypes" values={data.issueTypes} onChange={update} required options={["No Output", "Flicker", "Intermittent", "Dimming", "Color Shift", "Comm Failure", "Overheating", "Early Failure", "Out of Box Failure", "Clicking", "Other"]} info={fieldHelp.issueTypes} />)}
               {data.issueTypes.includes("Other") && <div className="mt-5"><Field label="Other Issue" name="issueOther" value={data.issueOther} onChange={update} /></div>}
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                {fieldWrap("dateFirstObserved", <Field label="Date First Observed" name="dateFirstObserved" type="date" value={data.dateFirstObserved} onChange={update} required />)}
-                <Field label="Failure Rate" name="failureRate" value={data.failureRate} onChange={update} placeholder="Example: 3 of 25 fixtures" />
-                {fieldWrap("repeatable", <SelectField label="Repeatable" name="repeatable" value={data.repeatable} onChange={update} required options={["Yes", "No", "Unknown"]} />)}
+                {fieldWrap("dateFirstObserved", <Field label="Date First Observed" name="dateFirstObserved" type="date" value={data.dateFirstObserved} onChange={update} required info={fieldHelp.dateFirstObserved} />)}
+                <Field label="Failure Rate" name="failureRate" value={data.failureRate} onChange={update} placeholder="Example: 3 of 25 fixtures" info={fieldHelp.failureRate} />
+                {fieldWrap("repeatable", <SelectField label="Repeatable" name="repeatable" value={data.repeatable} onChange={update} required options={["Yes", "No", "Unknown"]} info={fieldHelp.repeatable} />)}
               </div>
               <div className="mt-5">
-                {fieldWrap("detailedDescription", <TextAreaField label="Detailed Description" name="detailedDescription" value={data.detailedDescription} onChange={update} required placeholder="If repeatable, describe how to reproduce. Otherwise, include all known details." />)}
+                {fieldWrap("detailedDescription", <TextAreaField label="Detailed Description" name="detailedDescription" value={data.detailedDescription} onChange={update} required placeholder="If repeatable, describe how to reproduce. Otherwise, include all known details." info={fieldHelp.detailedDescription} />)}
               </div>
             </section>
 
@@ -429,13 +492,13 @@ function IntakeWorkflow({ onBack }) {
               <h2 className="text-2xl font-semibold">Electrical & Installation</h2>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
                 <div className="space-y-5">
-                  {fieldWrap("electricalInputVoltage", <SelectField label="Input Voltage" name="electricalInputVoltage" value={data.electricalInputVoltage} onChange={update} required options={voltageOptions} />)}
-                  <SelectField label="Line Frequency" name="lineFrequency" value={data.lineFrequency} onChange={update} options={["50Hz", "60Hz", "Unknown"]} />
-                  <SelectField label="Surge Protection?" name="surgeProtection" value={data.surgeProtection} onChange={update} options={["Yes", "No", "Unknown"]} />
-                  <SelectField label="Grounding Condition" name="groundingCondition" value={data.groundingCondition} onChange={update} options={["Verified Good", "Questionable", "No Ground", "Unknown"]} />
+                  {fieldWrap("electricalInputVoltage", <SelectField label="Input Voltage" name="electricalInputVoltage" value={data.electricalInputVoltage} onChange={update} required options={voltageOptions} info={fieldHelp.electricalInputVoltage} />)}
+                  <SelectField label="Line Frequency" name="lineFrequency" value={data.lineFrequency} onChange={update} options={["50Hz", "60Hz", "Unknown"]} info={fieldHelp.lineFrequency} />
+                  <SelectField label="Surge Protection?" name="surgeProtection" value={data.surgeProtection} onChange={update} options={["Yes", "No", "Unknown"]} info={fieldHelp.surgeProtection} />
+                  <SelectField label="Grounding Condition" name="groundingCondition" value={data.groundingCondition} onChange={update} options={["Verified Good", "Questionable", "No Ground", "Unknown"]} info={fieldHelp.groundingCondition} />
                 </div>
                 <div>
-                  <CheckboxGroup label="Recent Electrical Events" name="recentElectricalEvents" values={data.recentElectricalEvents} onChange={update} options={recentElectricalEventOptions} />
+                  <CheckboxGroup label="Recent Electrical Events" name="recentElectricalEvents" values={data.recentElectricalEvents} onChange={update} options={recentElectricalEventOptions} info={fieldHelp.recentElectricalEvents} />
                 </div>
               </div>
             </section>
@@ -447,26 +510,26 @@ function IntakeWorkflow({ onBack }) {
             <section>
               <h2 className="text-2xl font-semibold">Testing & Troubleshooting Already Performed</h2>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                {fieldWrap("labTesting", <SelectField label="Lab Testing" name="labTesting" value={data.labTesting} onChange={update} required options={["Yes", "No", "Unknown"]} />)}
-                <TextAreaField label="Lab Testing Results" name="labResults" value={data.labResults} onChange={update} rows={3} />
-                {fieldWrap("replacementInstalled", <SelectField label="Replacement Installed" name="replacementInstalled" value={data.replacementInstalled} onChange={update} required options={["Yes", "No", "Unknown"]} />)}
-                <TextAreaField label="Replacement Results" name="replacementResults" value={data.replacementResults} onChange={update} rows={3} />
+                {fieldWrap("labTesting", <SelectField label="Lab Testing" name="labTesting" value={data.labTesting} onChange={update} required options={["Yes", "No", "Unknown"]} info={fieldHelp.labTesting} />)}
+                <TextAreaField label="Lab Testing Results" name="labResults" value={data.labResults} onChange={update} rows={3} info={fieldHelp.labResults} />
+                {fieldWrap("replacementInstalled", <SelectField label="Replacement Installed" name="replacementInstalled" value={data.replacementInstalled} onChange={update} required options={["Yes", "No", "Unknown"]} info={fieldHelp.replacementInstalled} />)}
+                <TextAreaField label="Replacement Results" name="replacementResults" value={data.replacementResults} onChange={update} rows={3} info={fieldHelp.replacementResults} />
               </div>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold">Requested Services</h2>
-              {fieldWrap("requestedServices", <CheckboxGroup label="Requested Services" name="requestedServices" values={data.requestedServices} onChange={update} required options={["Failure Analysis", "Functional Testing", "Stress Testing", "Technical Report", "Consultation", "Manufacturer Collaboration", "Expert Witness"]} />)}
+              {fieldWrap("requestedServices", <CheckboxGroup label="Requested Services" name="requestedServices" values={data.requestedServices} onChange={update} required options={["Failure Analysis", "Functional Testing", "Stress Testing", "Technical Report", "Consultation", "Manufacturer Collaboration", "Expert Witness"]} info={fieldHelp.requestedServices} />)}
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold">Timeline & Priority</h2>
               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                {fieldWrap("expectedTurnaround", <SelectField label="Expected Turnaround Time" name="expectedTurnaround" value={data.expectedTurnaround} onChange={update} required options={["Standard", "Within 1 week", "Within 2 weeks", "Urgent / ASAP", "Not Sure"]} />)}
-                {fieldWrap("priority", <SelectField label="Priority" name="priority" value={data.priority} onChange={update} required options={["Low", "Medium", "High", "Critical"]} />)}
+                {fieldWrap("expectedTurnaround", <SelectField label="Expected Turnaround Time" name="expectedTurnaround" value={data.expectedTurnaround} onChange={update} required options={["Standard", "Within 1 week", "Within 2 weeks", "Urgent / ASAP", "Not Sure"]} info={fieldHelp.expectedTurnaround} />)}
+                {fieldWrap("priority", <SelectField label="Priority" name="priority" value={data.priority} onChange={update} required options={["Low", "Medium", "High", "Critical"]} info={fieldHelp.priority} />)}
               </div>
               <div className="mt-5">
-                <TextAreaField label="Additional Notes" name="additionalNotes" value={data.additionalNotes} onChange={update} rows={4} />
+                <TextAreaField label="Additional Notes" name="additionalNotes" value={data.additionalNotes} onChange={update} rows={4} info={fieldHelp.additionalNotes} />
               </div>
               <div className="mt-6 rounded-2xl border border-cyan-300/15 bg-cyan-300/10 p-5 text-sm leading-6 text-slate-300">
                 No information is stored by this website. Submitting opens your email client with the completed CIF details. Attach photos, fixture labels, test data, or other supporting files to that email before sending.
