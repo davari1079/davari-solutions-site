@@ -555,12 +555,185 @@ function IntakeWorkflow({ onBack }) {
 }
 
 
+
+function TechSolutionsPage({ navItems, onNavigateHome, onOpenTech, onContact }) {
+  const techServices = [
+    {
+      title: "Website Building",
+      description:
+        "Clean, modern websites for small businesses, consultants, and service providers who need a professional online presence without unnecessary complexity.",
+      points: ["Business websites", "Landing pages", "Service pages", "Domain and launch support"],
+    },
+    {
+      title: "App Building",
+      description:
+        "Practical lightweight apps and tools that help organize work, capture information, and make repeatable business processes easier to manage.",
+      points: ["Intake workflows", "Simple dashboards", "Internal tools", "Process automation"],
+    },
+    {
+      title: "Technology Help for Non-Tech People",
+      description:
+        "Plain-language support for people who need help setting up, understanding, or using technology without getting buried in technical jargon.",
+      points: ["Domain and email setup", "Online forms", "File workflows", "Tool selection and guidance"],
+    },
+  ];
+
+  return (
+    <div className="min-h-screen scroll-smooth bg-[#020817] text-white">
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.22),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.13),transparent_22%),radial-gradient(circle_at_bottom_right,rgba(15,23,42,0.9),transparent_32%)]" />
+
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+          <button onClick={() => onNavigateHome("top", "DavAri Solutions")} className="flex items-center gap-3 text-left">
+            <ShieldLogo className="h-12 w-12" />
+            <div>
+              <div className="text-lg font-semibold tracking-wide text-white">DavAri Solutions</div>
+              <div className="text-[10px] uppercase tracking-[0.35em] text-slate-400">Engineering Insight. Strategic Solutions.</div>
+            </div>
+          </button>
+
+          <nav className="hidden items-center gap-7 md:flex">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => item.page ? onOpenTech() : onNavigateHome(item.id, item.label)}
+                className={`text-sm transition ${item.page ? "text-cyan-300" : "text-slate-300 hover:text-cyan-300"}`}
+              >
+                {item.label}
+              </button>
+            ))}
+            <button
+              onClick={() => onContact()}
+              className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950"
+            >
+              Request a Consultation
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        <section className="mx-auto grid max-w-7xl gap-14 px-6 py-20 lg:grid-cols-[1.08fr_0.92fr] lg:px-8 lg:py-28">
+          <div className="flex flex-col justify-center">
+            <div className="mb-5 inline-flex w-fit rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-1 text-sm text-cyan-200">
+              Websites • Apps • Plain-language technology help
+            </div>
+            <h1 className="max-w-3xl text-4xl font-semibold leading-tight text-white md:text-6xl">
+              TECH Solutions for businesses and people who need technology to feel simple.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+              DavAri Solutions helps non-tech clients build practical websites, lightweight apps, and technology workflows that support real business needs without overcomplicating the process.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a
+                href="mailto:info@davarisolutions.com?subject=TECH Solutions Inquiry"
+                className="rounded-2xl bg-cyan-300 px-6 py-3 font-medium text-slate-950 shadow-[0_0_36px_rgba(125,211,252,0.18)] transition hover:scale-[1.02]"
+              >
+                Email Us
+              </a>
+              <button
+                onClick={() => onNavigateHome("contact", "Contact")}
+                className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300"
+              >
+                Contact DavAri
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <div className="relative w-full max-w-xl">
+              <div className="absolute inset-0 rounded-[2.5rem] bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.18),transparent_55%)] blur-3xl" />
+              <div className="relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_20px_80px_rgba(2,8,23,0.55)] backdrop-blur-sm">
+                <div className="rounded-[2rem] border border-cyan-300/20 bg-gradient-to-br from-slate-950 to-slate-900 p-7">
+                  <FullLogo className="mx-auto w-[220px] md:w-[300px]" />
+                </div>
+                <div className="mt-5 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
+                  <div className="text-sm uppercase tracking-[0.35em] text-cyan-300">Practical Focus</div>
+                  <p className="mt-3 leading-7 text-slate-300">
+                    Built for clients who need a website, small app, form, workflow, or technical setup explained and delivered in plain language.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-white/10 bg-white/[0.03]">
+          <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+            <div className="mb-12 max-w-3xl">
+              <div className="mb-3 text-sm uppercase tracking-[0.35em] text-cyan-300">Proposed Services</div>
+              <h2 className="text-3xl font-semibold md:text-4xl">Technology support that meets clients where they are.</h2>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-3">
+              {techServices.map((service) => (
+                <motion.div
+                  key={service.title}
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-[2rem] border border-white/10 bg-slate-900/80 p-6 shadow-[0_12px_40px_rgba(2,8,23,0.35)]"
+                >
+                  <div className="text-xl font-semibold">{service.title}</div>
+                  <p className="mt-4 leading-7 text-slate-300">{service.description}</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {service.points.map((point) => (
+                      <span key={point} className="rounded-full border border-white/10 bg-slate-950/70 px-3 py-1 text-xs text-slate-200">
+                        {point}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <div>
+              <div className="mb-3 text-sm uppercase tracking-[0.35em] text-cyan-300">Best Fit</div>
+              <h2 className="text-3xl font-semibold md:text-4xl">For non-tech people who need a trusted technical partner.</h2>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {["Small businesses", "Consultants", "Service providers", "Solo founders", "Local organizations", "Teams needing simple tools"].map((item) => (
+                <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4">
+                  <div className="h-2.5 w-2.5 rounded-full bg-cyan-300" />
+                  <div className="text-slate-200">{item}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="pb-24">
+          <div className="mx-auto max-w-6xl px-6 lg:px-8">
+            <div className="rounded-[2.5rem] border border-cyan-300/20 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 p-10 shadow-[0_18px_80px_rgba(2,8,23,0.5)]">
+              <div className="max-w-3xl">
+                <div className="mb-3 text-sm uppercase tracking-[0.35em] text-cyan-300">Start a TECH Solutions conversation</div>
+                <h2 className="text-3xl font-semibold md:text-4xl">Bring the idea, problem, or workflow. DavAri can help shape the technical path.</h2>
+                <p className="mt-5 text-lg leading-8 text-slate-300">
+                  Whether the need is a new website, a simple app, or help making technology easier to use, the first step is a practical conversation about the goal and the cleanest path forward.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-4">
+                  <a href="mailto:info@davarisolutions.com?subject=TECH Solutions Inquiry" className="rounded-2xl bg-cyan-300 px-6 py-3 font-medium text-slate-950 transition hover:scale-[1.02]">Email Us</a>
+                  <a href="tel:+17709136865" className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300">Call Us</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
 export default function App() {
   const [transition, setTransition] = useState({
     open: true,
     label: "DavAri Solutions",
   });
   const [showIntake, setShowIntake] = useState(false);
+  const [showTechSolutions, setShowTechSolutions] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -624,13 +797,16 @@ export default function App() {
     { id: "about", label: "About" },
     { id: "services", label: "Services" },
     { id: "process", label: "Process" },
+    { id: "tech-solutions", label: "TECH Solutions", page: true },
     { id: "contact", label: "Contact" },
   ];
 
   useEffect(() => {
     const handlePopState = () => {
       const isCifRoute = window.location.hash === "#cif" || window.location.hash.startsWith("#cif-page-");
+      const isTechRoute = window.location.hash === "#tech-solutions";
       setShowIntake(isCifRoute);
+      setShowTechSolutions(isTechRoute);
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -639,6 +815,7 @@ export default function App() {
   }, []);
 
   const openIntake = () => {
+    setShowTechSolutions(false);
     setShowIntake(true);
     if (!window.location.hash.startsWith("#cif")) {
       window.history.pushState({ view: "cif-start" }, "", "#cif");
@@ -652,6 +829,40 @@ export default function App() {
       window.history.pushState({}, "", window.location.pathname + window.location.search);
     }
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+  };
+
+  const openTechSolutions = () => {
+    setTransition({ open: true, label: "TECH Solutions" });
+    setShowIntake(false);
+    setTimeout(() => {
+      setShowTechSolutions(true);
+      if (window.location.hash !== "#tech-solutions") {
+        window.history.pushState({ view: "tech-solutions" }, "", "#tech-solutions");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 380);
+    setTimeout(() => {
+      setTransition((prev) => ({ ...prev, open: false }));
+    }, 980);
+  };
+
+  const navigateHomeSection = (id, label) => {
+    setTransition({ open: true, label });
+    setShowIntake(false);
+    setShowTechSolutions(false);
+    if (window.location.hash) {
+      window.history.pushState({}, "", window.location.pathname + window.location.search);
+    }
+    setTimeout(() => {
+      if (id === "top") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 120);
+    setTimeout(() => {
+      setTransition((prev) => ({ ...prev, open: false }));
+    }, 980);
   };
 
   const startTransition = (id, label) => {
@@ -685,6 +896,17 @@ export default function App() {
         </header>
         <IntakeWorkflow onBack={closeIntake} />
       </div>
+    );
+  }
+
+  if (showTechSolutions) {
+    return (
+      <TechSolutionsPage
+        navItems={navItems}
+        onNavigateHome={navigateHomeSection}
+        onOpenTech={openTechSolutions}
+        onContact={() => navigateHomeSection("contact", "Contact")}
+      />
     );
   }
 
@@ -738,7 +960,7 @@ export default function App() {
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => startTransition(item.id, item.label)}
+                onClick={() => item.page ? openTechSolutions() : startTransition(item.id, item.label)}
                 className="text-sm text-slate-300 transition hover:text-cyan-300"
               >
                 {item.label}
