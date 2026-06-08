@@ -610,6 +610,25 @@ function TechSolutionsPage({ navItems, onNavigateHome, onOpenTech, onContact }) 
             </button>
           </nav>
         </div>
+        <div className="border-t border-white/10 px-6 py-3 md:hidden">
+          <nav className="mx-auto flex max-w-7xl gap-3 overflow-x-auto pb-1">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => item.page ? onOpenTech() : onNavigateHome(item.id, item.label)}
+                className={`shrink-0 rounded-full border px-4 py-2 text-sm transition ${item.page ? "border-cyan-300/40 bg-cyan-300/15 text-cyan-200" : "border-white/10 bg-white/[0.04] text-slate-300 hover:border-cyan-300/40 hover:text-cyan-300"}`}
+              >
+                {item.label}
+              </button>
+            ))}
+            <button
+              onClick={() => onContact()}
+              className="shrink-0 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950"
+            >
+              Request
+            </button>
+          </nav>
+        </div>
       </header>
 
       <main>
@@ -971,6 +990,25 @@ export default function App() {
               className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950"
             >
               Request a Consultation
+            </button>
+          </nav>
+        </div>
+        <div className="border-t border-white/10 px-6 py-3 md:hidden">
+          <nav className="mx-auto flex max-w-7xl gap-3 overflow-x-auto pb-1">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => item.page ? openTechSolutions() : startTransition(item.id, item.label)}
+                className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-300"
+              >
+                {item.label}
+              </button>
+            ))}
+            <button
+              onClick={() => startTransition("contact", "Request a Consultation")}
+              className="shrink-0 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950"
+            >
+              Request
             </button>
           </nav>
         </div>
