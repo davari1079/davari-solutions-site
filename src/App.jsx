@@ -5,6 +5,21 @@ const LIGHTING_THEME_IMAGE = "/lighting_theme.webp";
 const TECH_THEME_IMAGE = "/tech_theme.webp";
 
 
+function ThemedPageBackground({ image }) {
+  return (
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <img
+        src={image}
+        alt=""
+        aria-hidden="true"
+        className="h-full w-full object-cover opacity-40"
+      />
+      <div className="absolute inset-0 bg-[#020817]/70" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.22),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.16),transparent_24%),linear-gradient(180deg,rgba(2,8,23,0.40),rgba(2,8,23,0.92))]" />
+    </div>
+  );
+}
+
 function ShieldLogo({ className = "h-12 w-12" }) {
   return (
     <img src="/davari_shield.svg" alt="DavAri Shield" className={className} />
@@ -584,7 +599,7 @@ function TechSolutionsPage({ navItems, onNavigateHome, onOpenTech, onContact }) 
 
   return (
     <div className="min-h-screen scroll-smooth bg-[#020817] text-white">
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.22),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.13),transparent_22%),radial-gradient(circle_at_bottom_right,rgba(15,23,42,0.9),transparent_32%)]" />
+      <ThemedPageBackground image={TECH_THEME_IMAGE} />
 
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
@@ -638,7 +653,7 @@ function TechSolutionsPage({ navItems, onNavigateHome, onOpenTech, onContact }) 
       <main>
         <section
           className="mx-auto grid max-w-7xl gap-14 rounded-[2.5rem] bg-cover bg-center bg-no-repeat px-6 py-20 lg:grid-cols-[1.08fr_0.92fr] lg:px-8 lg:py-28"
-          style={{ backgroundImage: `linear-gradient(90deg, rgba(2,8,23,0.98) 0%, rgba(2,8,23,0.82) 52%, rgba(2,8,23,0.92) 100%), url(${TECH_THEME_IMAGE})` }}
+          style={{ backgroundImage: `linear-gradient(90deg, rgba(2,8,23,0.80) 0%, rgba(2,8,23,0.50) 52%, rgba(2,8,23,0.76) 100%), url(${TECH_THEME_IMAGE})` }}
         >
           <div className="flex flex-col justify-center">
             <div className="mb-5 inline-flex w-fit rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-1 text-sm text-cyan-200">
@@ -963,7 +978,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.22),transparent_28%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.13),transparent_22%),radial-gradient(circle_at_bottom_right,rgba(15,23,42,0.9),transparent_32%)]" />
+      <ThemedPageBackground image={LIGHTING_THEME_IMAGE} />
 
       <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
@@ -1024,7 +1039,7 @@ export default function App() {
       <main id="top">
         <section
             className="relative overflow-hidden bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `linear-gradient(90deg, rgba(2,8,23,0.98) 0%, rgba(2,8,23,0.84) 48%, rgba(2,8,23,0.92) 100%), url(${LIGHTING_THEME_IMAGE})` }}
+            style={{ backgroundImage: `linear-gradient(90deg, rgba(2,8,23,0.82) 0%, rgba(2,8,23,0.52) 48%, rgba(2,8,23,0.78) 100%), url(${LIGHTING_THEME_IMAGE})` }}
           >
           <div className="mx-auto grid max-w-7xl gap-14 px-6 py-20 lg:grid-cols-[1.15fr_0.85fr] lg:px-8 lg:py-28">
             <div className="flex flex-col justify-center">
