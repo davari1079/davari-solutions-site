@@ -757,7 +757,7 @@ function TechSolutionsPage({ navItems, onNavigateHome, onOpenTech, onContact }) 
                 </p>
                 <div className="mt-8 flex flex-wrap gap-4">
                   <a href="mailto:info@davarisolutions.com?subject=TECH Solutions Inquiry" className="rounded-2xl bg-cyan-300 px-6 py-3 font-medium text-slate-950 transition hover:scale-[1.02]">Email Us</a>
-                  <a href="tel:+17709136865" className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300">Call Us</a>
+                  <a href="tel:+14049535222" className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300">Call Us</a>
                 </div>
               </div>
             </div>
@@ -1295,7 +1295,7 @@ export default function App() {
                   <div className="mb-3 text-sm uppercase tracking-[0.35em] text-cyan-300">
                     CONTACT{" "}
                     <span className="normal-case tracking-normal text-sm text-slate-400">
-                      - info@davarisolutions.com / (770)-913-6865
+                      - info@davarisolutions.com / (404)-953-5222
                     </span>
                   </div>
                   <h2 className="text-3xl font-semibold md:text-4xl">
@@ -1316,7 +1316,7 @@ export default function App() {
                       Email Us
                     </a>
                     <a
-                      href="tel:+17709136865"
+                      href="tel:+14049535222"
                       className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:border-cyan-300 hover:text-cyan-300"
                     >
                       Call Us
